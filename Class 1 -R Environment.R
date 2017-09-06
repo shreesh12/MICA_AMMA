@@ -28,14 +28,11 @@ getwd()
 
 
 
-setwd("C:\\Ram\\General 20150804 v1\\Trainings\\R Programming for Data Science")
+setwd("C:\\YYYYYY\\AMMA 2017\\Data\\data_2017\\data_2017")
 ## Notice the direction of the slash (/)
-setwd("C:/Ram/General 20150804 v1/R Training NAB/Day 1")
+setwd("C:\\YYYYYY\\AMMA 2017\\Data\\data_2017\\data_2017")
 
 getwd()
-
-
-
 
 #############   Interacting with R objects ######################
 
