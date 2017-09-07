@@ -1,0 +1,125 @@
+#Load all the required packages
+library(titanic)
+library(rpart.plot)
+library(InformationValue)
+library(rpart)
+library(randomForest)
+library(DAAG)
+library(gmodels)
+library(Hmisc)
+library(pROC)
+library(ResourceSelection)
+library(car)
+library(caret)
+library(dplyr)
+
+#Get the working directory
+getwd()
+
+#Change the working directory to the folder where your dataset is present
+setwd("C:\\YYYYYY\\AMMA 2017\\Data\\data_2017") 
+
+#Read the dataset into a data-frame
+titanic_main <- read.csv('train.csv')
+
+#Impute the mean into the NA's occuring in the dataset
+titanic_main$Age[is.na(titanic_main$Age)] <- mean(titanic_main$Age, na.rm = TRUE)
+summary(titanic_main) 
+
+#Setting the seed for reproducibility. Same random number dataset will be used throughout
+set.seed(1234)
+
+#Generate a new column in the dataset and insert random deviates
+titanic_main$rand <- runif(nrow(titanic_main))
+
+# Split the data into training and test sets
+titanic_train <- titanic_main[titanic_main$rand <= 0.7,] #Training dataset
+titanic_test <- titanic_main[titanic_main$rand > 0.7,]   #Test dataset
+
+#Build a model from the training dataset
+titanic_model <- glm(formula = Survived ~ Pclass + Sex + SibSp + Parch + Fare + Age,
+                     data=titanic_train, family = binomial)
+
+titanic_lm <- lm(formula = Survived ~ Pclass + Sex + SibSp + Parch + Fare + Age,
+                 data=titanic_train) 
+
+#To remove insignificant variables
+
+#Check for VIF, remove the variables that have the VIF value >5
+vif(titanic_lm)
+
+#At the end of the summary statistics, check for the p-value of each variable
+#If p-value>0.05 then the variable is insignificant
+summary(titanic_lm)
+
+#The variable Parch is found to be insignificant, remove it and create the model again
+titanic_train$Parch <- NULL
+
+titanic_model <- glm(formula = Survived ~ Pclass + Sex + SibSp + Fare + Age,
+                     data=titanic_train, family = binomial)
+summary(titanic_model)
+
+
+#The variable Fare is found to be insignificant, remove it and create the model again
+titanic_train$Fare <- NULL
+titanic_model <- glm(formula = Survived ~ Pclass + Sex + SibSp + Age,
+                     data=titanic_train, family = binomial)
+summary(titanic_model)
+
+#No more insignificant variables found
+
+#Test the model performance on training set
+titanic_train$prob = predict(titanic_model, newdata = titanic_train,  type=c("response"))
+titanic_train$spred <- ifelse(titanic_train$prob>=.5,'pred_yes','pred_no')
+table(titanic_train$spred,titanic_train$Survived)
+
+
+#Test the model performance on test set
+titanic_test$prob = predict(titanic_model, newdata = titanic_test,  type=c("response"))
+titanic_test$spred <- ifelse(titanic_test$prob>=.5,'pred_yes','pred_no')
+table(titanic_test$spred,titanic_test$Survived)
+
+
+###Function definition for K-fold cross validation begins here
+func_KFold <- function(dataset,formula,family,k)
+{
+  obj <- glm(formula = formula, data = dataset, family = family )
+  CVbinary(obj, nfolds= k, print.details=TRUE)
+  
+}
+###Function definition for K-fold cross validation ends here
+
+
+###Function definition for MSE begins here
+func_MSE <- function(dataset,formula)
+{
+  LM <- lm(formula=formula, data=dataset)
+  LM_sum <-summary(LM)
+  MSE <- mean(LM_sum$residuals^2)
+  print("Mean squared error")
+  print(MSE)
+}
+###Function definition for K-fold cross validation ends here
+
+
+#Calling the KFold function for training data
+Train_obj <- func_KFold(titanic_train, Survived ~ Pclass + Sex + SibSp + Age, binomial , 10)
+
+#Calling the Mean Squared Error function for training data
+Train_MSE <-func_MSE(titanic_train,Survived ~ Pclass + Sex + SibSp + Age)
+
+#confusion matrix on training set
+table(titanic_train$Survived,round(Train_obj$cvhat))
+print("Estimate of Accuracy")
+print(Train_obj$acc.cv)
+
+#Calling the KFold function for test data
+Test_obj <- func_KFold(titanic_test,Survived ~ Pclass + Sex + SibSp + Age,binomial,10)
+
+#Calling the Mean Squared Error function for test data
+Test_MSE <-func_MSE(titanic_test,Survived ~ Pclass + Sex + SibSp + Age)
+
+#Confusion matrix for test set
+table(titanic_test$Survived,round(Test_obj$cvhat))
+print("Estimate of Accuracy")
+print(Test_obj$acc.cv)
