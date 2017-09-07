@@ -1,6 +1,3 @@
-
-
-
 ## Overview of the R Studio IDE
 ## Various sections and their utility
 
@@ -25,11 +22,6 @@ sessionInfo()
 getwd()
 
 ## Set the Working Directory
-
-
-
-setwd("C:\\YYYYYY\\AMMA 2017\\Data\\data_2017\\data_2017")
-## Notice the direction of the slash (/)
 setwd("C:\\YYYYYY\\AMMA 2017\\Data\\data_2017\\data_2017")
 
 getwd()
