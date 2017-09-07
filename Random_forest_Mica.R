@@ -8,7 +8,7 @@
 getwd()
 
 #Change the working directory to point to the location where the data files are stored
-setwd('C:/Users/RAJNEESH VISHNU/Desktop/MICA2017/Data')
+setwd("C:\\YYYYYY\\AMMA 2017\\Data\\data_2017")
 
 
 # relevant packages for random forest functions and input/output orerations respectively
