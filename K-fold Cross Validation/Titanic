@@ -35,7 +35,7 @@ titanic_main$rand <- runif(nrow(titanic_main))
 # Split the data into training and test sets
 titanic_train <- titanic_main[titanic_main$rand <= 0.7,] #Training dataset
 titanic_test <- titanic_main[titanic_main$rand > 0.7,]   #Test dataset
-
+ 
 #Build a model from the training dataset
 titanic_model <- glm(formula = Survived ~ Pclass + Sex + SibSp + Parch + Fare + Age,
                      data=titanic_train, family = binomial)
